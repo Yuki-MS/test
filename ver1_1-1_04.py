@@ -126,31 +126,31 @@ class Application(tk.Tk):
                                            y = self.clsApp03_FldRef_POS_Y + self.clsApp03_FldRef_LINE_SPACE,
                                            anchor=tk.W)
         
-        #　４　データプレビュー【DataPrev】
-        self.clsApp04_DataPrev_POS_X = 50    # << 説明の横位置
-        self.clsApp04_DataPrev_POS_Y = 425   # << 説明の縦位置
-        self.clsApp04_DataPrev_SIDE_SPACE = 50    # << 変換実行ボタンの、説明の横位置からの左詰めスペース
-        self.clsApp04_DataPrev_LINE_SPACE = 70   # << 行間
+        #　４　ファイル読込【FileLoad】
+        self.clsApp04_FileLoad_POS_X = 50    # << 説明の横位置
+        self.clsApp04_FileLoad_POS_Y = 425   # << 説明の縦位置
+        self.clsApp04_FileLoad_SIDE_SPACE = 50    # << 変換実行ボタンの、説明の横位置からの左詰めスペース
+        self.clsApp04_FileLoad_LINE_SPACE = 70   # << 行間
 
         #　４－１　ラベル（説明文）   
-        self.clsApp04_DataPrev_label01 = tk.Label(self.base_frame,
-                                                text="２　処理データのプレビュー確認をしてください。",
+        self.clsApp04_FileLoad_label01 = tk.Label(self.base_frame,
+                                                text="２　ファイル読込作業を行ってしてください。　（指定したフォルダ内の全acqファイルを読み込みます。）",
                                                 font = ("BIZ UDPゴシック", 14,"bold", "underline"))
-        self.clsApp04_DataPrev_label01.place(x = self.clsApp04_DataPrev_POS_X,
-                                             y = self.clsApp04_DataPrev_POS_Y)
+        self.clsApp04_FileLoad_label01.place(x = self.clsApp04_FileLoad_POS_X,
+                                             y = self.clsApp04_FileLoad_POS_Y)
 
          #　４－２　データプレビュー実行ボタン
-        self.clsApp04_DataPrev_button = tk.Button(self.base_frame,
-                                                 text = "データプレビュー",
+        self.clsApp04_FileLoad_button = tk.Button(self.base_frame,
+                                                 text = "acqファイル読込",
                                                  font = ("BIZ UDPゴシック", 16),
                                                  relief = "raised",
                                                  width = 16,
                                                  height = 2,
                                                  bd = 5,
                                                  bg = "#E0E0E0",
-                                                 command = lambda:self.button_click_DataPrev())
-        self.clsApp04_DataPrev_button.place(x = self.clsApp04_DataPrev_POS_X + self.clsApp04_DataPrev_SIDE_SPACE,
-                                            y = self.clsApp04_DataPrev_POS_Y + self.clsApp04_DataPrev_LINE_SPACE,
+                                                 command = lambda:self.button_click_FileLoad())
+        self.clsApp04_FileLoad_button.place(x = self.clsApp04_FileLoad_POS_X + self.clsApp04_FileLoad_SIDE_SPACE,
+                                            y = self.clsApp04_FileLoad_POS_Y + self.clsApp04_FileLoad_LINE_SPACE,
                                             anchor=tk.W)
                
         #　５　変換実行【RunConv】
@@ -161,7 +161,7 @@ class Application(tk.Tk):
 
         #　５－１　ラベル（説明文）   
         self.clsApp05_RunConv_label01 = tk.Label(self.base_frame,
-                                                text="３　実行ボタンを押してしてください。（エクセルへの変換が実行されます）",
+                                                text="３　実行ボタンを押してしてください。　（エクセルへの変換が実行されます）",
                                                 font = ("BIZ UDPゴシック", 14,"bold", "underline"))
         self.clsApp05_RunConv_label01.place(x = self.clsApp05_RunConv_POS_X,
                                             y = self.clsApp05_RunConv_POS_Y)
@@ -284,7 +284,7 @@ class Application(tk.Tk):
         no_file_win.grab_set()
 
         label = tk.Label(no_file_win,
-                        text="読込フォルダが選択されていません。\n読込フォルダを正しく選択してください。",
+                        text="読込フォルダが選択されていません。\n最初にフォルダを選択してください。",
                         font=("BIZ UDPゴシック", 14),
                         justify="center")
         label.pack(pady=(25, 10))
@@ -338,8 +338,8 @@ class Application(tk.Tk):
         print(self.data_set_of_all_files_pd)
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
 
-    #　ボタンクリック（データプレビュー）－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▼▼▼▼
-    def button_click_DataPrev(self):
+    #　ボタンクリック（ファイル読込）－－－－－－－－－－－－－－－－－－－－－ーー－－－－－－－－－－－－－－▼▼▼▼
+    def button_click_FileLoad(self):
         try:
             self.file_list
             self.pre_data_acquisition()

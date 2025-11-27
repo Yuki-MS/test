@@ -21,11 +21,24 @@ class Application(tk.Tk):
         self.geometry(f"{self.BASE_WINDOW_WIDTH}x{self.BASE_WINDOW_HEIGHT}+{self.BASE_WINDOW_POS_X}+{self.BASE_WINDOW_POS_Y}")
         
         #　０　メインフレーム設置（ベース画面と同一サイズ）
-        self.base_frame = tk.Frame(self, width=self.BASE_WINDOW_WIDTH, height=self.BASE_WINDOW_HEIGHT, bd=5, relief="ridge")
+        self.base_frame = tk.Frame(self,
+                                   width=self.BASE_WINDOW_WIDTH,
+                                   height=self.BASE_WINDOW_HEIGHT,
+                                   bd=5,
+                                   relief="ridge")
         self.base_frame.propagate(False)
         self.base_frame.pack()
 
         self.initial_dir = os.getcwd()
+        self.initial_check_state = False
+        
+        #　０　アプリの基本色
+        self.tk_setPalette(background="#EBF4FA")
+
+        self.button_color = "#E6DCDC"
+
+        self.error_window_color = "#E3E9EC"
+        self.error_window_button_color = "#E6DCDC"
 
         #　１　タイトル設置【Title】
         self.clsApp01_Title_label01 = tk.Label(self.base_frame,
@@ -73,7 +86,7 @@ class Application(tk.Tk):
                                              width = 17,
                                              height = 4,
                                              bd = 5,
-                                             bg = "#E0E0E0",
+                                             bg = self.button_color,
                                              command = self.show_explanation)
         self.clsApp02_Exp_button.place(x = self.clsApp02_Exp_POS_X,
                                        y = self.clsApp02_Exp_POS_Y)
@@ -89,7 +102,7 @@ class Application(tk.Tk):
         self.clsApp03_FldRef_SIDE_SPACE = 100    # << 参照フォルダ表示設の、説明の横位置からの左詰めスペース
         self.clsApp03_FldRef_LINE_SPACE = 65   # << 説明文と参照ボタンの行間
 
-        self.clsApp03_FldRef_entry_str = tk.StringVar(self, os.getcwd())
+        self.clsApp03_FldRef_entry_str = tk.StringVar(self, self.initial_dir)
 
         #　３－１　ラベル１（説明文）   
         self.clsApp03_FldRef_label01 = tk.Label(self.base_frame,
@@ -105,7 +118,7 @@ class Application(tk.Tk):
                                                 relief = "raised",
                                                 width = 5,
                                                 bd = 5,
-                                                bg = "#E0E0E0",
+                                                bg = self.button_color,
                                                 command = lambda:self.button_click_FldRef())
         self.clsApp03_FldRef_button.place(x = self.clsApp03_FldRef_POS_X,
                                           y = self.clsApp03_FldRef_POS_Y + self.clsApp03_FldRef_LINE_SPACE,
@@ -139,7 +152,7 @@ class Application(tk.Tk):
         self.clsApp04_FileLoad_label01.place(x = self.clsApp04_FileLoad_POS_X,
                                              y = self.clsApp04_FileLoad_POS_Y)
 
-         #　４－２　データプレビュー実行ボタン
+         #　４－２　ファイルの読込ボタン
         self.clsApp04_FileLoad_button = tk.Button(self.base_frame,
                                                  text = "acqファイル読込",
                                                  font = ("BIZ UDPゴシック", 16),
@@ -147,7 +160,7 @@ class Application(tk.Tk):
                                                  width = 16,
                                                  height = 2,
                                                  bd = 5,
-                                                 bg = "#E0E0E0",
+                                                 bg = self.button_color,
                                                  command = lambda:self.button_click_FileLoad())
         self.clsApp04_FileLoad_button.place(x = self.clsApp04_FileLoad_POS_X + self.clsApp04_FileLoad_SIDE_SPACE,
                                             y = self.clsApp04_FileLoad_POS_Y + self.clsApp04_FileLoad_LINE_SPACE,
@@ -174,7 +187,7 @@ class Application(tk.Tk):
                                                  width = 16,
                                                  height = 2,
                                                  bd = 5,
-                                                 bg = "#E0E0E0",
+                                                 bg = self.button_color,
                                                  command = lambda:self.button_click_RunConv())
         self.clsApp05_RunConv_button.place(x = self.clsApp05_RunConv_POS_X + self.clsApp05_RunConv_SIDE_SPACE,
                                            y = self.clsApp05_RunConv_POS_Y + self.clsApp05_RunConv_LINE_SPACE,
@@ -197,9 +210,6 @@ class Application(tk.Tk):
                                         y=self.clsApp05_Exit_POS_Y,
                                         anchor=tk.CENTER)
 
-        #　０　アプリの基本色
-        self.tk_setPalette(background="#EBF4FA")
-
         #　０　アプリを前面に
         self.lift()
         self.mainloop()
@@ -215,6 +225,15 @@ class Application(tk.Tk):
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
 
     #　実行前の初期チェック－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▼▼▼▼
+    """
+    読込フォルダに表示してあるディレクトリへ移動し、
+    1.acqファイルの有無を確認
+    ⇒ 存在する場合：≪self.file_list≫フォルダ内の全acqファイル
+    ⇒ 存在しない場合はエラー画面表示
+    2.全ファイルのチャンネル数が一致するか確認  
+    ⇒ 一致しない場合はエラー画面表示
+    3.両方OKであればイニシャルチェックの状態をTrueとする
+    """
     def initial_check(self):
         #　読込フォルダに表示してあるディレクトリを取得して移動　－－－－－－－－－－－－▽
         try:
@@ -226,7 +245,7 @@ class Application(tk.Tk):
         
         #　acqファイルが存在するか確認－－－－－－－－－－－－－－－－－－－－－－－－－－▽
         #　⇒　存在しない場合は、エラー画面（別ウインドウ）で表示
-        self.file_list = [f for f in os.listdir() if ".lnk" not in f if ".acq" in f]
+        self.file_list = [f for f in os.listdir() if ".lnk" not in f if ".acq" in f]    # acqファイル一覧（ショートカットファイルを除く）
         if not self.file_list:
             self.show_error01_no_acqfiles()
             return  # 処理を中断
@@ -238,38 +257,42 @@ class Application(tk.Tk):
         self.wait_window(check_win)
         #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－△
 
-        #　ファイル、チャンネル数の両方をクリアしたらTrue、そうでない場合はFalseを返す
+        #　ファイル、チャンネル数の両方をクリアしたらイニシャルチェック状態をTrueとし、そうでない場合はFalseを返す
         if check_win.result == "ok":
-            self.file_list = [f for f in os.listdir() if ".lnk" not in f if ".acq" in f]    # acqファイル一覧（ショートカットファイルを除く）
             self.file_name_list = [f.split(".")[0] for f in self.file_list]    # acqファイルのファイル名（拡張子なし）一覧
             self.file_count = len(self.file_name_list)    # acqファイル数
-            return self.file_list
+            self.initial_check_state = True
         else:
-            return False
+            self.initial_check_state = True
         #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－△
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
 
     #　エラー画面１（Acqファイルがない場合の処理）　→　実行前の初期チェック－－－－－－－－－－－－－－－－－－▼▼▼▼
+    """
+    acqファイルがないときの警告ウィンドウ
+    """
     def show_error01_no_acqfiles(self):
-        """acqファイルがないときの警告ウィンドウ"""
         no_file_win = tk.Toplevel(self)
         no_file_win.title("ファイルなし")
-        no_file_win.geometry("560x135")
+        no_file_win.geometry("560x180")
         no_file_win.resizable(False, False)
+        no_file_win.configure(bg=self.error_window_color)
         no_file_win.grab_set()
 
         label = tk.Label(no_file_win,
-                        text="このフォルダにはacqファイルが存在していません。\n読込フォルダを正しく選択してください。",
+                        text="このフォルダにはacqファイルが存在していません。\n\n読込フォルダを正しく選択してください。",
                         font=("BIZ UDPゴシック", 14),
+                        bg=self.error_window_color,
                         justify="center")
-        label.pack(pady=(25, 10))
+        label.pack(pady=(30, 10))
 
         ok_button = tk.Button(no_file_win,
                             text="OK",
                             font=("BIZ UDPゴシック", 14),
                             width=10,
+                            bg=self.error_window_button_color,
                             command=no_file_win.destroy)
-        ok_button.pack()
+        ok_button.pack(pady=20)
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
  
     #　エラー画面２（フォルダ参照していない場合）－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▼▼▼▼
@@ -278,14 +301,16 @@ class Application(tk.Tk):
     """
     def show_error02_not_select_foloder(self):
         no_file_win = tk.Toplevel(self)
-        no_file_win.title("ファイルなし")
-        no_file_win.geometry("560x135")
+        no_file_win.title("フォルダ参照先の訂正")
+        no_file_win.geometry("560x180")
         no_file_win.resizable(False, False)
+        no_file_win.configure(bg=self.error_window_color)
         no_file_win.grab_set()
 
         label = tk.Label(no_file_win,
-                        text="読込フォルダが選択されていません。\n最初にフォルダを選択してください。",
+                        text="読込フォルダが正しく選択されていません。\n\n読込可能なフォルダを選択してください。",
                         font=("BIZ UDPゴシック", 14),
+                        bg=self.error_window_color,
                         justify="center")
         label.pack(pady=(25, 10))
 
@@ -293,8 +318,9 @@ class Application(tk.Tk):
                             text="OK",
                             font=("BIZ UDPゴシック", 14),
                             width=10,
+                            bg=self.error_window_button_color,
                             command=no_file_win.destroy)
-        ok_button.pack()
+        ok_button.pack(pady=20)
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
 
     #　ボタンクリック（参照ボタン）－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▼▼▼▼
@@ -341,8 +367,10 @@ class Application(tk.Tk):
     #　ボタンクリック（ファイル読込）－－－－－－－－－－－－－－－－－－－－－ーー－－－－－－－－－－－－－－▼▼▼▼
     def button_click_FileLoad(self):
         try:
-            self.file_list
-            self.pre_data_acquisition()
+            if self.initial_check_state == True:
+                self.pre_data_acquisition()
+            else:
+                self.show_error02_not_select_foloder()
         except:
             self.show_error02_not_select_foloder()
     #　－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－▲▲▲▲
@@ -682,9 +710,10 @@ class ChannelCheckWindow(tk.Toplevel):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.title("チャンネル数チェック中")
-        self.geometry("400x110")
+        self.title("チャンネル数チェック")
+        self.geometry("400x125")
         self.resizable(False, False)
+        self.configure(bg="#E3E9EC")
         self.grab_set()
 
         label = tk.Label(self, text="チャンネル数を確認しています...", font=("BIZ UDPゴシック", 12))
@@ -715,10 +744,15 @@ class ChannelCheckWindow(tk.Toplevel):
         for widget in self.winfo_children():
             widget.destroy()
 
-        label = tk.Label(self, text="チャンネル数が一致しません。", font=("BIZ UDPゴシック", 14))
-        label.pack(pady=(20, 10))
+        label = tk.Label(self, text="チャンネル数が一致しません。",bg="#E3E9EC", font=("BIZ UDPゴシック", 14))
+        label.pack(pady=(20, 20))
 
-        ok_button = tk.Button(self, text="OK", font=("BIZ UDPゴシック", 14), width=10, command=self.close_window)
+        ok_button = tk.Button(self,
+                              text="OK",
+                              font=("BIZ UDPゴシック", 14),
+                              width=10,
+                              bg="#E6DCDC",
+                              command=self.close_window)
         ok_button.pack()
 
     def close_window(self):
